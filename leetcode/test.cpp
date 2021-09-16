@@ -3,35 +3,49 @@
 
 using namespace std;
 
+//  Definition for singly-linked list.
+struct ListNode {
+	int val;
+	ListNode *next;
+};
+
+
 class Solution {
 public:
-	int maxTurbulenceSize(vector<int>& arr) {
-		(void)arr;
-		return 0;
+	ListNode* reverseKGroup(ListNode* head, int k) {
 	}
 };
 
+void
+check(std::initializer_list<int> orig, int k, std::initializer_list<int> res)
+{
+	std::vector<ListNode> nodes(orig.size());
+	{
+		size_t i = 0;
+		for (int val : orig) {
+			auto &n = nodes[i++];
+			n.val = val;
+			n.next = i == orig.size() ? nullptr : &nodes[i];
+		}
+	}
+	Solution sol;
+	ListNode* r = sol.reverseKGroup(&nodes[0], k);
+	{
+		size_t i = 0;
+		for (int val : res) {
+			if (val != r->val)
+				abort();
+			r = r->next;
+		}
+		if (r != nullptr)
+			abort();
+	}
+}
+
 int main()
 {
-	{
-		Solution sol;
-		vector<int> vec = {9,4,2,10,7,8,8,1,9};
-		int res = sol.maxTurbulenceSize(vec);
-		if (res != 5)
-			abort();
-	}
-	{
-		Solution sol;
-		vector<int> vec = {4,8,12,16};
-		int res = sol.maxTurbulenceSize(vec);
-		if (res != 2)
-			abort();
-	}
-	{
-		Solution sol;
-		vector<int> vec = {100};
-		int res = sol.maxTurbulenceSize(vec);
-		if (res != 1)
-			abort();
-	}
+	check({1,2,3,4,5}, 2, {2,1,4,3,5});
+	check({1,2,3,4,5}, 3, {1,2,3,4,5});
+	check({1,2,3,4,5}, 1, {1,2,3,4,5});
+	check({1}, 1, {1});
 }
