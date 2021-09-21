@@ -5,8 +5,8 @@ int main(int argn, const char** args)
 #ifdef MY
 	if (argn >= 2)
 		freopen(args[1], "r", stdin);
-	else
-		freopen("./data1.txt", "r", stdin);
+	else if (freopen("./data1.txt", "r", stdin) == NULL)
+		freopen("../data1.txt", "r", stdin);
 #else
 	(void)argn;
 	(void)args;
