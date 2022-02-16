@@ -12,7 +12,7 @@ ELSE()
     MESSAGE(WARNING "Unexcpected build type: ${CMAKE_BUILD_TYPE}")
 ENDIF()
 
-SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_C_STANDARD 11)
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror")
 SET(CMAKE_C_FLAGS "-Wall -Wextra -Wpedantic -Werror")
