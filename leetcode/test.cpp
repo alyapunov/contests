@@ -1,51 +1,59 @@
-#include <alya.h>
+#include <cassert>
+#include <iostream>
 #include <vector>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <climits>
 
 using namespace std;
 
-//  Definition for singly-linked list.
-struct ListNode {
-	int val;
-	ListNode *next;
-};
-
-
 class Solution {
 public:
-	ListNode* reverseKGroup(ListNode* head, int k) {
+	int trap(const vector<int>& height) {
+		int total = 0;
+		int h = 0;
+		int s = 0;
+		for (auto itr = height.begin(); itr != height.end(); ++itr) {
+			if (*itr >= h) {
+				h = *itr;
+				total += s;
+				s = 0;
+			} else {
+				s += h - *itr;
+			}
+		}
+		int hmax = h;
+		h = 0;
+		s = 0;
+		for (auto itr = height.rbegin(); itr != height.rend(); ++itr) {
+			if (*itr >= h) {
+				h = *itr;
+				total += s;
+				s = 0;
+				if (h == hmax)
+					break;
+			} else {
+				s += h - *itr;
+			}
+		}
+		return total;
 	}
 };
 
 void
-check(std::initializer_list<int> orig, int k, std::initializer_list<int> res)
+check(const vector<int>& nums, int res)
 {
-	std::vector<ListNode> nodes(orig.size());
-	{
-		size_t i = 0;
-		for (int val : orig) {
-			auto &n = nodes[i++];
-			n.val = val;
-			n.next = i == orig.size() ? nullptr : &nodes[i];
-		}
-	}
-	Solution sol;
-	ListNode* r = sol.reverseKGroup(&nodes[0], k);
-	{
-		size_t i = 0;
-		for (int val : res) {
-			if (val != r->val)
-				abort();
-			r = r->next;
-		}
-		if (r != nullptr)
-			abort();
+	Solution s;
+	int my = s.trap(nums);
+	if (my != res) {
+		std::cout << "expected " << res << ", got " << my << "\n";
+		abort();
 	}
 }
 
 int main()
 {
-	check({1,2,3,4,5}, 2, {2,1,4,3,5});
-	check({1,2,3,4,5}, 3, {1,2,3,4,5});
-	check({1,2,3,4,5}, 1, {1,2,3,4,5});
-	check({1}, 1, {1});
+	check({0,1,0,2,1,0,1,3,2,1,2,1}, 6);
+	check({4,2,0,3,2,5}, 9);
 }
