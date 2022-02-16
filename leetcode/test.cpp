@@ -1,25 +1,48 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
+#include <utility>
 
 using namespace std;
+
+template <int n, int ... I>
+void split(int k, int* p, std::integer_sequence<int, I...>)
+{
+	((p[n - (I + 1)] = k % (I + 1), k /= (I + 1)), ...);
+}
+
+template <int n>
+void split(int k, int* p)
+{
+	split<n>(k, p, std::make_integer_sequence<int, n>{});
+}
+
+//template <int n>
+//void split(int k, int* p)
+//{
+//	p[n - 1] = 0;
+//	for (int i = 2; i < n; i++) {
+//		p[n - i] = k % i;
+//		k /= i;
+//	}
+//	p[0] = k % n;
+//}
+
+typedef void (*split_t)(int, int*);
+split_t splits[10] = {split<1>, split<1>, split<2>, split<3>, split<4>, split<5>, split<6>, split<7>, split<8>, split<9>};
 
 class Solution {
 public:
 	string getPermutation(int n, int k) {
 		k--;
-		string res = "123456789";
-		string src = res;
-		res.resize(n);
+		uint64_t src = 0x987654321;
+		string res(n, '0');
 		int p[9];
+		splits[n](k, p);
 		for (int i = 0; i < n; i++) {
-			p[i] = k % (i + 1);
-			k /= (i + 1);
-		}
-		for (int i = 0; i < n; i++) {
-			int d = p[n - 1 - i];
-			res[i] = src[d];
-			src.erase(d, 1);
+			int d = p[i] * 4;
+			res[i] = '0' + ((src >> d) & 0xf);
+			src = (src & ((1ull << d) - 1)) | (src >> (d + 4) << d);
 		}
 		return res;
 	}
