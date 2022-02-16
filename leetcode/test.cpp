@@ -1,51 +1,56 @@
-#include <alya.h>
-#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <string>
 
 using namespace std;
 
-//  Definition for singly-linked list.
-struct ListNode {
-	int val;
-	ListNode *next;
-};
-
-
 class Solution {
 public:
-	ListNode* reverseKGroup(ListNode* head, int k) {
+	string getPermutation(int n, int k) {
+		k--;
+		string res = "123456789";
+		string src = res;
+		res.resize(n);
+		int p[9];
+		for (int i = 0; i < n; i++) {
+			p[i] = k % (i + 1);
+			k /= (i + 1);
+		}
+		for (int i = 0; i < n; i++) {
+			int d = p[n - 1 - i];
+			res[i] = src[d];
+			src.erase(d, 1);
+		}
+		return res;
 	}
 };
 
 void
-check(std::initializer_list<int> orig, int k, std::initializer_list<int> res)
+check(int n, int k, const string& res)
 {
-	std::vector<ListNode> nodes(orig.size());
-	{
-		size_t i = 0;
-		for (int val : orig) {
-			auto &n = nodes[i++];
-			n.val = val;
-			n.next = i == orig.size() ? nullptr : &nodes[i];
-		}
-	}
 	Solution sol;
-	ListNode* r = sol.reverseKGroup(&nodes[0], k);
+	auto my = sol.getPermutation(n, k);
+	if (my != res)
 	{
-		size_t i = 0;
-		for (int val : res) {
-			if (val != r->val)
-				abort();
-			r = r->next;
-		}
-		if (r != nullptr)
-			abort();
+		std::cout << "Expected " << res << " got " << my << "\n";
+		abort();
 	}
 }
 
 int main()
 {
-	check({1,2,3,4,5}, 2, {2,1,4,3,5});
-	check({1,2,3,4,5}, 3, {1,2,3,4,5});
-	check({1,2,3,4,5}, 1, {1,2,3,4,5});
-	check({1}, 1, {1});
+	check(3, 1, "123");
+	check(3, 2, "132");
+	check(3, 3, "213");
+	check(3, 4, "231");
+	check(3, 5, "312");
+	check(3, 6, "321");
+
+	check(4, 1, "1234");
+	check(4, 2, "1243");
+	check(4, 3, "1324");
+	check(4, 4, "1342");
+	check(4, 5, "1423");
+	check(4, 6, "1432");
+	check(4, 7, "2134");
 }
