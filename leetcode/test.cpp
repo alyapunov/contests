@@ -7,12 +7,12 @@
 
 using namespace std;
 
-const char *spaces = "                                                  "
-		     "                                                  ";
+constexpr char spaces[101] = "                                                  "
+			     "                                                  ";
 
-std::string_view get_spaces(size_t count)
+constexpr std::string_view get_spaces(size_t count)
 {
-	return {spaces + strlen(spaces) - count, count};
+	return {spaces, count};
 }
 
 class Solution {
@@ -26,7 +26,17 @@ public:
 			res.back().reserve(maxWidth);
 			taken = 1;
 			size_t len = words[i].size();
-			while (i + taken < words.size() && len + words[i + taken].size() + 1 <= maxWidth) {
+			while (true) {
+				if (i + taken == words.size()) {
+					for (size_t j = 1; j < taken; j++) {
+						res.back() += get_spaces(1);
+						res.back() += words[i + j];
+					}
+					res.back() += get_spaces(maxWidth - res.back().size());
+					return res;
+				}
+				if (len + words[i + taken].size() + 1 > maxWidth)
+					break;
 				len += words[i + taken].size() + 1;
 				taken++;
 			}
@@ -35,18 +45,10 @@ public:
 				res.back() += get_spaces(more_spaces);
 				continue;
 			}
-			if (i + taken == words.size()) {
-				for (size_t j = 1; j < taken; j++) {
-					res.back() += " ";
-					res.back() += words[i + j];
-				}
-				res.back() += get_spaces(more_spaces);
-				break;
-			}
+			size_t add = more_spaces / (taken - 1);
+			size_t rnd = more_spaces % (taken - 1);
 			for (size_t j = 1; j < taken; j++) {
-				size_t cur_spaces = (more_spaces + (taken - j - 1)) / (taken - j);
-				more_spaces -= cur_spaces;
-				res.back() += get_spaces(cur_spaces + 1);
+				res.back() += get_spaces(1 + add + (j <= rnd));
 				res.back() += words[i + j];
 			}
 		}
