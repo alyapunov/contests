@@ -1,51 +1,82 @@
-#include <alya.h>
+#include <iostream>
+#include <string>
 #include <vector>
-
-using namespace std;
-
-//  Definition for singly-linked list.
-struct ListNode {
-	int val;
-	ListNode *next;
-};
-
 
 class Solution {
 public:
-	ListNode* reverseKGroup(ListNode* head, int k) {
+	std::string minWindow(const std::string& s, const std::string& t) {
+		int req[256] = {};
+		int cur[256] = {};
+
+		size_t reqh = 0;
+		for (uint8_t c : t)
+			reqh += req[c]++ == 0 ? 1 : 0;
+
+		size_t e = 0;
+		size_t h = 0;
+		for (e = 0; e < s.size(); e++) {
+			uint8_t c = s[e];
+			cur[c]++;
+			if (cur[c] == req[c])
+				h++;
+			if (h == reqh)
+				break;
+		}
+		if (h != reqh)
+			return "";
+
+		size_t b = 0;
+		while (true) {
+			uint8_t c = s[b];
+			if (cur[c] == req[c])
+				break;
+			cur[c]--;
+			++b;
+		}
+
+		size_t bestb = b;
+		size_t beste = e;
+
+		for (e++; e < s.size(); e++) {
+			{
+				uint8_t c = s[e];
+				cur[c]++;
+			}
+			while (true) {
+				uint8_t c = s[b];
+				if (cur[c] == req[c])
+					break;
+				cur[c]--;
+				++b;
+			}
+			if (e - b < beste - bestb) {
+				bestb = b;
+				beste = e;
+			}
+		}
+
+		return s.substr(bestb, beste - bestb + 1);
 	}
 };
 
 void
-check(std::initializer_list<int> orig, int k, std::initializer_list<int> res)
+check(const std::string& s, const std::string& t, const std::string& res)
 {
-	std::vector<ListNode> nodes(orig.size());
-	{
-		size_t i = 0;
-		for (int val : orig) {
-			auto &n = nodes[i++];
-			n.val = val;
-			n.next = i == orig.size() ? nullptr : &nodes[i];
-		}
-	}
+	std::cout << s << " and " << t << ": ";
 	Solution sol;
-	ListNode* r = sol.reverseKGroup(&nodes[0], k);
-	{
-		size_t i = 0;
-		for (int val : res) {
-			if (val != r->val)
-				abort();
-			r = r->next;
-		}
-		if (r != nullptr)
-			abort();
+	auto my = sol.minWindow(s, t);
+	if (my != res) {
+		std::cout << "expected " << res << " got " << my << std::endl;
+		abort();
 	}
+	std::cout << "OK" << std::endl;
 }
 
 int main()
 {
-	check({1,2,3,4,5}, 2, {2,1,4,3,5});
-	check({1,2,3,4,5}, 3, {1,2,3,4,5});
-	check({1,2,3,4,5}, 1, {1,2,3,4,5});
-	check({1}, 1, {1});
+	check("ADOBECODEBANC", "ABC", "BANC");
+	check("ADOBECODEBANCAB", "ABC", "CAB");
+	check("ADOBECODEBANCAB", "AAB", "BANCA");
+	check("a", "a", "a");
+	check("a", "aa", "");
 }
