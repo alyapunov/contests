@@ -1,51 +1,47 @@
 #include <alya.h>
-#include <vector>
+#include <string>
 
-using namespace std;
 
-//  Definition for singly-linked list.
-struct ListNode {
-	int val;
-	ListNode *next;
-};
-
+unsigned int buf[1024];
 
 class Solution {
 public:
-	ListNode* reverseKGroup(ListNode* head, int k) {
+	int numDistinct(const std::string& s, const std::string& t)
+	{
+		for (size_t i = 0; i < t.size(); i++)
+			buf[i] = 0;
+		buf[t.size()] = 1;
+		for (size_t i = s.size(); i > 0; ) {
+			i--;
+			for (size_t j = 0; j < t.size(); j++) {
+				if (t[j] == s[i])
+					buf[j] += buf[j + 1];
+			}
+		}
+		return buf[0];
 	}
 };
 
 void
-check(std::initializer_list<int> orig, int k, std::initializer_list<int> res)
+check(const std::string& s, const std::string& t, int exp)
 {
-	std::vector<ListNode> nodes(orig.size());
-	{
-		size_t i = 0;
-		for (int val : orig) {
-			auto &n = nodes[i++];
-			n.val = val;
-			n.next = i == orig.size() ? nullptr : &nodes[i];
-		}
-	}
 	Solution sol;
-	ListNode* r = sol.reverseKGroup(&nodes[0], k);
-	{
-		size_t i = 0;
-		for (int val : res) {
-			if (val != r->val)
-				abort();
-			r = r->next;
-		}
-		if (r != nullptr)
-			abort();
+	int res = sol.numDistinct(s, t);
+	if (res != exp) {
+		std::cout << s << " and " << t << " : "
+			  << "expected " << exp << " got " << res << std::endl;
+		abort();
 	}
 }
 
+
 int main()
 {
-	check({1,2,3,4,5}, 2, {2,1,4,3,5});
-	check({1,2,3,4,5}, 3, {1,2,3,4,5});
-	check({1,2,3,4,5}, 1, {1,2,3,4,5});
-	check({1}, 1, {1});
+	check("xslledayhxhadmctrliaxqpokyezcfhzaskeykchkmhpyjipxtsuljkwkovmvelvwxzwieeuqnjozrfwmzsylcwvsthnxujvrkszqwtglewkycikdaiocglwzukwovsghkhyidevhbgffoqkpabthmqihcfxxzdejletqjoxmwftlxfcxgxgvpperwbqvhxgsbbkmphyomtbjzdjhcrcsggleiczpbfjcgtpycpmrjnckslrwduqlccqmgrdhxolfjafmsrfdghnatexyanldrdpxvvgujsztuffoymrfteholgonuaqndinadtumnuhkboyzaqguwqijwxxszngextfcozpetyownmyneehdwqmtpjloztswmzzdzqhuoxrblppqvyvsqhnhryvqsqogpnlqfulurexdtovqpqkfxxnqykgscxaskmksivoazlducanrqxynxlgvwonalpsyddqmaemcrrwvrjmjjnygyebwtqxehrclwsxzylbqexnxjcgspeynlbmetlkacnnbhmaizbadynajpibepbuacggxrqavfnwpcwxbzxfymhjcslghmajrirqzjqxpgtgisfjreqrqabssobbadmtmdknmakdigjqyqcruujlwmfoagrckdwyiglviyyrekjealvvigiesnvuumxgsveadrxlpwetioxibtdjblowblqvzpbrmhupyrdophjxvhgzclidzybajuxllacyhyphssvhcffxonysahvzhzbttyeeyiefhunbokiqrpqfcoxdxvefugapeevdoakxwzykmhbdytjbhigffkmbqmqxsoaiomgmmgwapzdosorcxxhejvgajyzdmzlcntqbapbpofdjtulstuzdrffafedufqwsknumcxbschdybosxkrabyfdejgyozwillcxpcaiehlelczioskqtptzaczobvyojdlyflilvwqgyrqmjaeepydrcchfyftjighntqzoo", "rwmimatmhydhbujebqehjprrwfkoebcxxqfktayaaeheys", 543744000);
+	check("a", "a", 1);
+	check("a", "b", 0);
+	check("aaaa", "a", 4);
+	check("aaaa", "aa", 6);
+	check("rabbbit", "rabbit", 3);
+	check("babgbag", "bag", 5);
 }
