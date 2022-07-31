@@ -1,8 +1,9 @@
-#include <alya.h>
+#include <iostream>
 #include <string>
 
+static constexpr size_t MULT = 1;
 
-unsigned int buf[1024];
+unsigned int buf[1000 * MULT + 1];
 
 class Solution {
 public:
@@ -44,4 +45,12 @@ int main()
 	check("aaaa", "aa", 6);
 	check("rabbbit", "rabbit", 3);
 	check("babgbag", "bag", 5);
+	std::string s(1000 * MULT, 'a');
+	std::string t(1000 * MULT, 'a');
+	check(s, t, 1);
+	for (char &c : s)
+		c = (rand() & 1) ? 'a' : 'b';
+	for (char &c : t)
+		c = (rand() & 1) ? 'a' : 'b';
+	check(s, t, 0);
 }
