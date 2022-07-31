@@ -1,25 +1,70 @@
+#include <array>
+#include <cstring>
 #include <iostream>
 #include <string>
 
 static constexpr size_t MULT = 1;
 
-unsigned int buf[1000 * MULT + 1];
+static constexpr size_t MAX_SIZE = 1000 * MULT;
+
+static constexpr std::array<size_t, 128> gen_mapper()
+{
+	std::array<size_t, 128> res{};
+	for (char c = 'a'; c <= 'z'; ++c)
+		res[c] = c - 'a';
+	return res;
+}
+
+static constexpr std::array<size_t, 128> mapper = gen_mapper();
+
+static constexpr std::array<std::array<unsigned, 4>, 16> build_masks()
+{
+	std::array<std::array<unsigned, 4>, 16> res{};
+	for (size_t i = 0; i < 16; i++)
+		for (size_t j = 0; j < 4; j++)
+			res[i][j] = (i & (1u << j)) ? 0xFFFFFFFFu : 0;
+	return res;
+}
+
+static constexpr std::array<std::array<unsigned, 4>, 16> masks = build_masks();
+
+struct Bitset {
+	uint8_t arr[(MAX_SIZE + 7) / 8];
+	void set(size_t i) { arr[i / 8] |= (1 << (i % 8)); }
+	uint8_t get(size_t i) const { return (arr[i / 8] >> (i % 8)) & 0x1; }
+	uint8_t hex(size_t i) const { return (arr[i / 8] >> (i % 8)) & 0xF; }
+};
+
+struct Data {
+	std::array<unsigned int, MAX_SIZE+1> buf;
+	Bitset bits[128];
+	bool is;
+} data;
 
 class Solution {
 public:
 	int numDistinct(const std::string& s, const std::string& t)
 	{
-		for (size_t i = 0; i < t.size(); i++)
-			buf[i] = 0;
-		buf[t.size()] = 1;
+		if (data.is)
+			memset(&data, 0, sizeof(data));
+		data.is = true;
+		data.buf[t.size()] = 1;
+		for (size_t j = 0; j < t.size(); j++)
+			data.bits[(unsigned char)t[j]].set(j);
+
 		for (size_t i = s.size(); i > 0; ) {
 			i--;
-			for (size_t j = 0; j < t.size(); j++) {
-				if (t[j] == s[i])
-					buf[j] += buf[j + 1];
+			Bitset& bs = data.bits[(unsigned char)s[i]];
+			size_t lim = (t.size() + 3u) & ~3u;
+			for (size_t j = 0; j < lim; j += 4) {
+				const std::array<unsigned, 4> &m = masks[bs.hex(j)];
+				data.buf[j + 0] += data.buf[j + 1] & m[0];
+				data.buf[j + 1] += data.buf[j + 2] & m[1];
+				data.buf[j + 2] += data.buf[j + 3] & m[2];
+				data.buf[j + 3] += data.buf[j + 4] & m[3];
 			}
 		}
-		return buf[0];
+		return data.buf[0];
 	}
 };
 
