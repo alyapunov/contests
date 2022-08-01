@@ -58,10 +58,19 @@ public:
 			size_t lim = (t.size() + 3u) & ~3u;
 			for (size_t j = 0; j < lim; j += 4) {
 				const std::array<unsigned, 4> &m = masks[bs.hex(j)];
-				data.buf[j + 0] += data.buf[j + 1] & m[0];
-				data.buf[j + 1] += data.buf[j + 2] & m[1];
-				data.buf[j + 2] += data.buf[j + 3] & m[2];
-				data.buf[j + 3] += data.buf[j + 4] & m[3];
+				uint64_t a, b, c;
+
+				memcpy(&a, &data.buf[j + 1], sizeof(a));
+				memcpy(&b, &m[0], sizeof(b));
+				memcpy(&c, &data.buf[j + 0], sizeof(c));
+				c = (c + (a & b)) & 0x7FFFFFFF7FFFFFFFull;
+				memcpy(&data.buf[j + 0], &c, sizeof(c));
+
+				memcpy(&a, &data.buf[j + 3], sizeof(a));
+				memcpy(&b, &m[2], sizeof(b));
+				memcpy(&c, &data.buf[j + 2], sizeof(c));
+				c = (c + (a & b)) & 0x7FFFFFFF7FFFFFFFull;
+				memcpy(&data.buf[j + 2], &c, sizeof(c));
 			}
 		}
 		return data.buf[0];
