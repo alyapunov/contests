@@ -17,27 +17,16 @@ static constexpr std::array<size_t, 128> gen_mapper()
 
 static constexpr std::array<size_t, 128> mapper = gen_mapper();
 
-static constexpr std::array<std::array<unsigned, 4>, 16> build_masks()
-{
-	std::array<std::array<unsigned, 4>, 16> res{};
-	for (size_t i = 0; i < 16; i++)
-		for (size_t j = 0; j < 4; j++)
-			res[i][j] = (i & (1u << j)) ? 0xFFFFFFFFu : 0;
-	return res;
-}
 
-static constexpr std::array<std::array<unsigned, 4>, 16> masks = build_masks();
-
-struct Bitset {
-	uint8_t arr[(MAX_SIZE + 7) / 8];
-	void set(size_t i) { arr[i / 8] |= (1 << (i % 8)); }
-	uint8_t get(size_t i) const { return (arr[i / 8] >> (i % 8)) & 0x1; }
-	uint8_t hex(size_t i) const { return (arr[i / 8] >> (i % 8)) & 0xF; }
+struct Info {
+	uint16_t b;
+	uint16_t e;
 };
 
 struct Data {
 	std::array<unsigned int, MAX_SIZE+1> buf;
-	Bitset bits[128];
+	std::array<Info, 128> info;
+	std::array<uint16_t, MAX_SIZE> info_data;
 	bool is;
 } data;
 
@@ -49,28 +38,24 @@ public:
 			memset(&data, 0, sizeof(data));
 		data.is = true;
 		data.buf[t.size()] = 1;
+
 		for (size_t j = 0; j < t.size(); j++)
-			data.bits[(unsigned char)t[j]].set(j);
+			data.info[(unsigned char)t[j]].e++;
+		uint16_t sum = 0;
+		for (auto &inf : data.info) {
+			inf.b = sum;
+			sum += inf.e;
+			inf.e = inf.b;
+		}
+		for (size_t j = 0; j < t.size(); j++)
+			data.info_data[data.info[(unsigned char)t[j]].e++] = j;
 
 		for (size_t i = s.size(); i > 0; ) {
 			i--;
-			Bitset& bs = data.bits[(unsigned char)s[i]];
-			size_t lim = (t.size() + 3u) & ~3u;
-			for (size_t j = 0; j < lim; j += 4) {
-				const std::array<unsigned, 4> &m = masks[bs.hex(j)];
-				uint64_t a, b, c;
-
-				memcpy(&a, &data.buf[j + 1], sizeof(a));
-				memcpy(&b, &m[0], sizeof(b));
-				memcpy(&c, &data.buf[j + 0], sizeof(c));
-				c = (c + (a & b)) & 0x7FFFFFFF7FFFFFFFull;
-				memcpy(&data.buf[j + 0], &c, sizeof(c));
-
-				memcpy(&a, &data.buf[j + 3], sizeof(a));
-				memcpy(&b, &m[2], sizeof(b));
-				memcpy(&c, &data.buf[j + 2], sizeof(c));
-				c = (c + (a & b)) & 0x7FFFFFFF7FFFFFFFull;
-				memcpy(&data.buf[j + 2], &c, sizeof(c));
+			auto &inf = data.info[(unsigned char)s[i]];
+			for (uint16_t j = inf.b; j < inf.e; j++) {
+				uint16_t k = data.info_data[j];
+				data.buf[k] += data.buf[k + 1];
 			}
 		}
 		return data.buf[0];
