@@ -1,4 +1,5 @@
 #include <array>
+#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -20,6 +21,7 @@ static constexpr std::array<size_t, 128> mapper = gen_mapper();
 
 struct Info {
 	uint16_t b;
+	uint16_t c;
 	uint16_t e;
 };
 
@@ -45,20 +47,27 @@ public:
 		for (auto &inf : data.info) {
 			inf.b = sum;
 			sum += inf.e;
+			inf.c = inf.b + inf.e;
 			inf.e = inf.b;
 		}
 		for (size_t j = 0; j < t.size(); j++)
 			data.info_data[data.info[(unsigned char)t[j]].e++] = j;
 
+		uint16_t m = t.size();
 		for (size_t i = s.size(); i > 0; ) {
 			i--;
 			auto &inf = data.info[(unsigned char)s[i]];
-			for (uint16_t j = inf.b; j < inf.e; j++) {
+			while (inf.c > inf.b && data.info_data[inf.c - 1] + 1 >= m)
+				inf.c--;
+			for (uint16_t j = inf.c; j < inf.e; j++) {
 				uint16_t k = data.info_data[j];
+//				assert(data.buf[k + 1] != 0);
 				if (k > i)
 					break;
 				data.buf[k] += data.buf[k + 1];
 			}
+			if (inf.c != inf.e && data.info_data[inf.c] <= i)
+				m = std::min(m, data.info_data[inf.c]);
 		}
 		return data.buf[0];
 	}
