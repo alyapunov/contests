@@ -55,6 +55,8 @@ public:
 			auto &inf = data.info[(unsigned char)s[i]];
 			for (uint16_t j = inf.b; j < inf.e; j++) {
 				uint16_t k = data.info_data[j];
+				if (k > i)
+					break;
 				data.buf[k] += data.buf[k + 1];
 			}
 		}
