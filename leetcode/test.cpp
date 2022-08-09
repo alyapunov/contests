@@ -1,51 +1,45 @@
-#include <alya.h>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
 #include <vector>
 
 using namespace std;
 
-//  Definition for singly-linked list.
-struct ListNode {
-	int val;
-	ListNode *next;
-};
-
-
 class Solution {
 public:
-	ListNode* reverseKGroup(ListNode* head, int k) {
+	std::vector<int> method(const std::vector<int>& data)
+	{
+		return data;
 	}
 };
 
-void
-check(std::initializer_list<int> orig, int k, std::initializer_list<int> res)
+template<class T>
+std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
 {
-	std::vector<ListNode> nodes(orig.size());
-	{
-		size_t i = 0;
-		for (int val : orig) {
-			auto &n = nodes[i++];
-			n.val = val;
-			n.next = i == orig.size() ? nullptr : &nodes[i];
-		}
+	strm << '[';
+	bool first = true;
+	for (const auto& x : vec) {
+		strm << (first ? "" : ", ") << x;
+		first = false;
 	}
+	return strm << ']';
+}
+
+void
+check(const std::vector<int>& data, const std::vector<int>& expected)
+{
 	Solution sol;
-	ListNode* r = sol.reverseKGroup(&nodes[0], k);
-	{
-		size_t i = 0;
-		for (int val : res) {
-			if (val != r->val)
-				abort();
-			r = r->next;
-		}
-		if (r != nullptr)
-			abort();
+	auto got = sol.method(data);
+	if (got != expected) {
+		std::cout << data
+			  << " : "
+			  << "expected " << expected
+			  << " got " << got << std::endl;
+		abort();
 	}
 }
 
 int main()
 {
-	check({1,2,3,4,5}, 2, {2,1,4,3,5});
-	check({1,2,3,4,5}, 3, {1,2,3,4,5});
-	check({1,2,3,4,5}, 1, {1,2,3,4,5});
-	check({1}, 1, {1});
+	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
 }
