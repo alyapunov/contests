@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <optional>
 #include <vector>
 
 using namespace std;
@@ -12,6 +13,15 @@ public:
 		return data;
 	}
 };
+
+template<class T>
+std::ostream& operator<<(std::ostream& strm, const std::optional<T>& opt)
+{
+	if (opt.has_value())
+		return strm << opt.value();
+	else
+		return strm << "null";
+}
 
 template<class T>
 std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
