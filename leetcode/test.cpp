@@ -3,14 +3,35 @@
 #include <iterator>
 #include <optional>
 #include <vector>
+#include <numeric>
 
-using namespace std;
+//using namespace std;
+
+int tmp[20000];
 
 class Solution {
 public:
-	std::vector<int> method(const std::vector<int>& data)
+	int candy(const std::vector<int> &ratings)
 	{
-		return data;
+		size_t s = ratings.size();
+		tmp[0] = 1;
+		for (size_t i = 0; ++i != s;) {
+			if (ratings[i] > ratings[i - 1])
+				tmp[i] = tmp[i - 1] + 1;
+			else
+				tmp[i] = 1;
+		}
+		int res = tmp[s - 1];
+		for (size_t i = s - 1; i-- != 0;) {
+			if (ratings[i] > ratings[i + 1]) {
+				int x = tmp[i + 1] + 1;
+				if (tmp[i] < x)
+					tmp[i] = x;
+			}
+			res += tmp[i];
+		}
+		return res;
+
 	}
 };
 
@@ -36,10 +57,10 @@ std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
 }
 
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(const std::vector<int>& data, int expected)
 {
 	Solution sol;
-	auto got = sol.method(data);
+	auto got = sol.candy(data);
 	if (got != expected) {
 		std::cout << data
 			  << " : "
@@ -51,5 +72,11 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	check({1, 0, 2}, 5);
+	check({1, 2, 2}, 4);
+	check({1, 2, 3, 2, 1}, 9);
+	check({1, 2, 3, 1, 1}, 8);
+	check({1, 1, 3, 2, 1}, 8);
+	check({3, 2, 1, 2, 3}, 11);
+	check({2, 3, 2, 1}, 7);
 }
