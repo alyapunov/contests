@@ -4,13 +4,55 @@
 #include <optional>
 #include <vector>
 
-using namespace std;
+//using namespace std;
+
+struct Direction {
+	int x;
+	int y;
+	void create(const std::vector<int>& origin, const std::vector<int>& point)
+	{
+		x = point[0] - origin[0];
+		y = point[1] - origin[1];
+		if (y < 0) {
+			x = -x;
+			y = -y;
+		} else if (y == 0 && x < 0) {
+			x = -x;
+		}
+	}
+	bool operator<(const Direction &a) const {
+		return x * a.y < a.x * y;
+	}
+	bool operator==(const Direction &a) const {
+		return x * a.y == a.x * y;
+	}
+};
+
+Direction cache[300];
 
 class Solution {
 public:
-	std::vector<int> method(const std::vector<int>& data)
-	{
-		return data;
+	int maxPoints(const std::vector<std::vector<int>>& points) {
+		int max = 1;
+		for (size_t i = 0, ii = 1; ii < points.size(); i++, ii++) {
+			size_t n = 0;
+			for (size_t j = ii; j < points.size(); j++)
+				cache[n++].create(points[i], points[j]);
+			std::sort(cache, cache + n);
+			int m = 2;
+			for (size_t j = 1; j < n; j++) {
+				if (cache[j] == cache[j - 1]) {
+					m++;
+				} else {
+					if (max < m)
+						max = m;
+					m = 2;
+				}
+			}
+			if (max < m)
+				max = m;
+		}
+		return max;
 	}
 };
 
@@ -36,10 +78,10 @@ std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
 }
 
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(const std::vector<std::vector<int>>& data, int expected)
 {
 	Solution sol;
-	auto got = sol.method(data);
+	auto got = sol.maxPoints(data);
 	if (got != expected) {
 		std::cout << data
 			  << " : "
@@ -51,5 +93,7 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	check({{0,0}}, 1);
+	check({{1,1},{0,0}}, 2);
+	check({{1,1},{3,2},{5,3},{4,1},{2,3},{1,4}}, 4);
 }
