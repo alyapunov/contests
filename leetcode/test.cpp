@@ -4,13 +4,43 @@
 #include <optional>
 #include <vector>
 
-using namespace std;
+//using namespace std;
+
+int buf[200];
 
 class Solution {
 public:
-	std::vector<int> method(const std::vector<int>& data)
+	int calculateMinimumHP(const std::vector<std::vector<int>>& data)
 	{
-		return data;
+		size_t m = data.size();
+		size_t n = data[0].size();
+		{
+			auto &row = data[m - 1];
+			buf[n - 1] = row[n - 1] < 0 ? 1 - row[n - 1] : 1;
+			for (size_t j = n - 1; j-- > 0; ) {
+				int next = buf[j + 1];
+				if (row[j] >= next)
+					buf[j] = 1;
+				else
+					buf[j] = next - row[j];
+			}
+		}
+		for (size_t i = m - 1; i-- > 0; ) {
+			auto &row = data[i];
+			int next = buf[n - 1];
+			if (row[n - 1] >= next)
+				buf[n - 1] = 1;
+			else
+				buf[n - 1] = next - row[n - 1];
+			for (size_t j = n - 1; j-- > 0; ) {
+				next = std::min(buf[j], buf[j + 1]);
+				if (row[j] >= next)
+					buf[j] = 1;
+				else
+					buf[j] = next - row[j];
+			}
+		}
+		return buf[0];
 	}
 };
 
@@ -36,10 +66,10 @@ std::ostream& operator<<(std::ostream& strm, const std::vector<T>& vec)
 }
 
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(const std::vector<std::vector<int>>& data, int expected)
 {
 	Solution sol;
-	auto got = sol.method(data);
+	auto got = sol.calculateMinimumHP(data);
 	if (got != expected) {
 		std::cout << data
 			  << " : "
@@ -51,5 +81,6 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	check({{0}}, 1);
+	check({{-2,-3,3},{-5,-10,1},{10,30,-5}}, 7);
 }
