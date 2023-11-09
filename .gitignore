@@ -37,6 +37,10 @@ CMakeFiles
 Makefile
 cmake_install.cmake
 
+# build
+build*/
+cmake-build*/
+
 # Idea
 .idea
 
