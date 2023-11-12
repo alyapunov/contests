@@ -39,8 +39,9 @@ void sub(char *a, size_t s, uint64_t* pwr)
 
 uint64_t calc(char *a, char *b, size_t s, uint64_t* pwr)
 {
-	if (s == 1)
+	if (s == 1) {
 		return std::min(*a - '0' + 1, *b - '0' + 1);
+	}
 
 	char l = b[s - 1];
 	if (*a <= l)

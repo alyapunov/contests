@@ -1,0 +1,10 @@
+9
+Ivan 1
+Anton 1
+Victor 2
+Anton 3
+Ivan 5
+Denis 10
+Victor 11
+Anton 11
+Ivan 12
