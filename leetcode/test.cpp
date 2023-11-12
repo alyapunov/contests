@@ -3,14 +3,77 @@
 #include <iterator>
 #include <optional>
 #include <vector>
+#include <set>
 
-using namespace std;
+//using namespace std;
+
+struct border {
+	int coord;
+	int height;
+	bool operator<(const border& that) const { return coord < that.coord; }
+};
+
+border left_border[10001];
+border right_border[10001];
 
 class Solution {
 public:
-	std::vector<int> method(const std::vector<int>& data)
-	{
-		return data;
+	std::vector<std::vector<int>> getSkyline(const std::vector<std::vector<int>>& buildings) {
+		size_t n = 0;
+		for (const auto &b : buildings) {
+			left_border[n].coord = b[0];
+			left_border[n].height = b[2];
+			right_border[n].coord = b[1];
+			right_border[n].height = b[2];
+			n++;
+		}
+		std::sort(right_border, right_border + n);
+		left_border[n].coord = -1;
+		right_border[n].coord = -1;
+
+		std::vector<std::vector<int>> res;
+		size_t i = 0, j = 0;
+		int x, h = 0;
+		std::multiset<int> heights;
+		while (i < n) {
+			if (left_border[i].coord < right_border[j].coord) {
+				x = left_border[i].coord;
+				do {
+					heights.insert(left_border[i++].height);
+				} while (x == left_border[i].coord);
+			} else if (left_border[i].coord > right_border[j].coord) {
+				x = right_border[j].coord;
+				do {
+					heights.erase(heights.find(right_border[j++].height));
+				} while (x == right_border[j].coord);
+			} else {
+				x = left_border[i].coord;
+				do {
+					heights.insert(left_border[i++].height);
+				} while (x == left_border[i].coord);
+				do {
+					heights.erase(heights.find(right_border[j++].height));
+				} while (x == right_border[j].coord);
+			}
+			int nh = heights.empty() ? 0 : *heights.rbegin();
+			if (nh != h) {
+				res.push_back({x, nh});
+				h = nh;
+			}
+		}
+		while (j < n) {
+			x = right_border[j].coord;
+			do {
+				heights.erase(heights.find(right_border[j++].height));
+			} while (x == right_border[j].coord);
+
+			int nh = heights.empty() ? 0 : *heights.rbegin();
+			if (nh != h) {
+				res.push_back({x, nh});
+				h = nh;
+			}
+		}
+		return res;
 	}
 };
 
@@ -64,10 +127,10 @@ any_order_equal(const std::vector<T>& a, const std::vector<T>& b)
 }
 
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(const std::vector<std::vector<int>>& data, const std::vector<std::vector<int>>& expected)
 {
 	Solution sol;
-	auto got = sol.method(data);
+	auto got = sol.getSkyline(data);
 	if (got != expected) {
 	//if (!any_order_equal(got, expected)) {
 		std::cout << data
@@ -80,5 +143,6 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	check({{2,9,10},{3,7,15},{5,12,12},{15,20,10},{19,24,8}}, {{2,10},{3,15},{7,12},{12,0},{15,10},{20,8},{24,0}});
+	check({{0,2,3},{2,5,3}}, {{0,3},{5,0}});
 }
