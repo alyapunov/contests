@@ -18,3 +18,5 @@ SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror")
 SET(CMAKE_C_FLAGS "-Wall -Wextra -Wpedantic -Werror")
 
 ADD_EXECUTABLE(RollingHash.test RollingHash.cpp)
+
+ADD_EXECUTABLE(Galois.test Galois.cpp)
