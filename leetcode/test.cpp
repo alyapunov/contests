@@ -8,9 +8,23 @@ using namespace std;
 
 class Solution {
 public:
-	std::vector<int> method(const std::vector<int>& data)
-	{
-		return data;
+	long countDigitOne(long n) {
+		long res = 0;
+		long p = 1;
+		while (true) {
+			long d = p * 10;
+			long q = n / d;
+			long r = n % d;
+			res += q * p;
+			if (r >= 2 * p)
+				res += p;
+			else if (r >= p)
+				res += r - p + 1;
+			if (q == 0)
+				break;
+			p *= 10;
+		}
+		return res;
 	}
 };
 
@@ -64,10 +78,10 @@ any_order_equal(const std::vector<T>& a, const std::vector<T>& b)
 }
 
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(int data, int expected)
 {
 	Solution sol;
-	auto got = sol.method(data);
+	auto got = sol.countDigitOne(data);
 	if (got != expected) {
 	//if (!any_order_equal(got, expected)) {
 		std::cout << data
@@ -78,7 +92,29 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 	}
 }
 
+constexpr int trivial(int x)
+{
+	int res = 0;
+	for (int i = 0; i <= x; i++) {
+		int j = i;
+		while (j) {
+			if (j % 10 == 1)
+				res ++;
+			j /= 10;
+		}
+	}
+	return res;
+}
+
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	check(0, 0);
+	check(13, 6);
+	if (trivial(13) != 6)
+		abort();
+	for (size_t i = 0; i < 100; i++) {
+		int x = rand() % 10000;
+		check(x, trivial(x));
+	}
+	check(999999999, 900000000);
 }
