@@ -3,7 +3,7 @@
 #include <iterator>
 #include <optional>
 #include <vector>
-#include <set>
+#include <map>
 
 //using namespace std;
 
@@ -11,16 +11,18 @@ class Solution {
 public:
 	std::vector<int> maxSlidingWindow(const std::vector<int>& nums, int k) {
 		auto itr = nums.begin();
-		std::multiset<int> s;
+		std::map<int, int> s;
 		for (; k > 0; k--)
-			s.insert(*itr++);
+			s[*itr++]++;
 		std::vector<int> res;
-		res.push_back(*s.rbegin());
+		res.push_back(s.rbegin()->first);
 		auto del = nums.begin();
 		while (itr != nums.end()) {
-			s.erase(s.find(*del++));
-			s.insert(*itr++);
-			res.push_back(*s.rbegin());
+			s[*itr++]++;
+			auto del_itr = s.find(*del++);
+			if (--del_itr->second == 0)
+				s.erase(del_itr);
+			res.push_back(s.rbegin()->first);
 		}
 		return res;
 	}
