@@ -3,14 +3,26 @@
 #include <iterator>
 #include <optional>
 #include <vector>
+#include <set>
 
-using namespace std;
+//using namespace std;
 
 class Solution {
 public:
-	std::vector<int> method(const std::vector<int>& data)
-	{
-		return data;
+	std::vector<int> maxSlidingWindow(const std::vector<int>& nums, int k) {
+		auto itr = nums.begin();
+		std::multiset<int> s;
+		for (; k > 0; k--)
+			s.insert(*itr++);
+		std::vector<int> res;
+		res.push_back(*s.rbegin());
+		auto del = nums.begin();
+		while (itr != nums.end()) {
+			s.erase(s.find(*del++));
+			s.insert(*itr++);
+			res.push_back(*s.rbegin());
+		}
+		return res;
 	}
 };
 
@@ -64,13 +76,13 @@ any_order_equal(const std::vector<T>& a, const std::vector<T>& b)
 }
 
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(const std::vector<int>& data, int k, const std::vector<int>& expected)
 {
 	Solution sol;
-	auto got = sol.method(data);
+	auto got = sol.maxSlidingWindow(data, k);
 	if (got != expected) {
 	//if (!any_order_equal(got, expected)) {
-		std::cout << data
+		std::cout << data << ", " << k
 			  << " : "
 			  << "expected " << expected
 			  << " got " << got << std::endl;
@@ -80,5 +92,6 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	check({1,3,-1,-3,5,3,6,7}, 3, {3,3,5,5,6,7});
+	check({1}, 1, {1});
 }
