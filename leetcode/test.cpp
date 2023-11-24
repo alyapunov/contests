@@ -4,25 +4,109 @@
 #include <optional>
 #include <vector>
 #include <map>
+#include <cstring>
 
 //using namespace std;
+
+template <size_t N>
+struct Set {
+	uint64_t data[(N + 63) / 64] = {};
+	Set<(N + 63) / 64> index;
+
+	void set(uint64_t i)
+	{
+		uint64_t j = i / 64;
+		uint64_t k = i % 64;
+		data[j] |= 1ull << k;
+		index.set(j);
+	}
+
+	void clr(uint64_t i)
+	{
+		uint64_t j = i / 64;
+		uint64_t k = i % 64;
+		data[j] &= ~(1ull << k);
+		if (data[j] == 0)
+			index.clr(j);
+	}
+
+	uint64_t find() const
+	{
+		uint64_t j = index.find();
+		int k = 0x3f ^ __builtin_clzll(data[j]);
+		return j * 64 + k;
+	}
+
+	bool has() const
+	{
+		return index.has();
+	}
+};
+
+template <>
+struct Set<1> {
+	bool bit = false;
+	void set(uint64_t) { bit = true; }
+	void clr(uint64_t) { bit = false; }
+	uint64_t find() const { return 0; }
+	bool has() const { return bit; }
+};
+
+
+template <size_t N>
+struct SuperSet {
+	Set<N> index;
+	unsigned short counts[N] = {};
+
+	void add(uint64_t i)
+	{
+		counts[i]++;
+		index.set(i);
+	}
+
+	void del(uint64_t i)
+	{
+		if (--counts[i] == 0)
+			index.clr(i);
+	}
+
+	void reset()
+	{
+		while (index.has()) {
+			uint64_t i = index.index.find();
+			index.index.clr(i);
+			index.data[i] = 0;
+			memset(counts + i * 64, 0, 64 * sizeof(counts[0]));
+		}
+	}
+
+	uint64_t find() const
+	{
+		return index.find();
+	}
+
+};
+
+SuperSet<20032> superset;
 
 class Solution {
 public:
 	std::vector<int> maxSlidingWindow(const std::vector<int>& nums, int k) {
-		auto itr = nums.begin();
-		std::map<int, int> s;
-		for (; k > 0; k--)
-			s[*itr++]++;
+		superset.reset();
+
 		std::vector<int> res;
-		res.push_back(s.rbegin()->first);
+		res.reserve(nums.size() + 1 - k);
+
+		auto itr = nums.begin();
+		for (; k > 0; k--)
+			superset.add(10000 + *itr++);
+
+		res.push_back(superset.find() - 10000);
 		auto del = nums.begin();
 		while (itr != nums.end()) {
-			s[*itr++]++;
-			auto del_itr = s.find(*del++);
-			if (--del_itr->second == 0)
-				s.erase(del_itr);
-			res.push_back(s.rbegin()->first);
+			superset.add(10000 + *itr++);
+			superset.del(10000 + *del++);
+			res.push_back(superset.find() - 10000);
 		}
 		return res;
 	}
@@ -96,4 +180,5 @@ int main()
 {
 	check({1,3,-1,-3,5,3,6,7}, 3, {3,3,5,5,6,7});
 	check({1}, 1, {1});
+	check({1, -1}, 1, {1, -1});
 }
