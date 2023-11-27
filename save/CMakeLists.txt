@@ -17,6 +17,13 @@ SET(CMAKE_C_STANDARD 11)
 SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror")
 SET(CMAKE_C_FLAGS "-Wall -Wextra -Wpedantic -Werror")
 
+ENABLE_TESTING()
+
 ADD_EXECUTABLE(RollingHash.test RollingHash.cpp)
+ADD_TEST(NAME RollingHash.test COMMAND RollingHash.test)
 
 ADD_EXECUTABLE(Galois.test Galois.cpp)
+ADD_TEST(NAME Galois.test COMMAND Galois.test)
+
+ADD_EXECUTABLE(BitSet.test BitSet.cpp)
+ADD_TEST(NAME BitSet.test COMMAND BitSet.test)
