@@ -3,14 +3,80 @@
 #include <iterator>
 #include <optional>
 #include <vector>
+#include <cmath>
 
-using namespace std;
+//using namespace std;
 
-class Solution {
+class MedianFinder {
 public:
-	std::vector<int> method(const std::vector<int>& data)
+	std::vector<int> a, b;
+
+	MedianFinder()
 	{
-		return data;
+
+	}
+
+	void push_a(int num)
+	{
+		a.push_back(num);
+		std::push_heap(a.begin(), a.end());
+	}
+
+	int pop_a()
+	{
+		std::pop_heap(a.begin(), a.end());
+		int res = a.back();
+		a.pop_back();
+		return res;
+	}
+
+	void push_b(int num)
+	{
+		b.push_back(num);
+		std::push_heap(b.begin(), b.end(), std::greater<int>{});
+	}
+
+	int pop_b()
+	{
+		std::pop_heap(b.begin(), b.end(), std::greater<int>{});
+		int res = b.back();
+		b.pop_back();
+		return res;
+	}
+
+	void addNum(int num)
+	{
+		if (a.empty() && b.empty())
+			return a.push_back(num);
+
+		if (b.empty()) {
+			if (num < a[0])
+				std::swap(num, a[0]);
+			return b.push_back(num);
+		}
+
+		if (num < a[0]) {
+			if (a.size() > b.size())
+				push_b(pop_a());
+			push_a(num);
+		} else if (num > b[0]) {
+			if (b.size() >= a.size())
+				push_a(pop_b());
+			push_b(num);
+		} else {
+			if (a.size() > b.size())
+				push_b(num);
+			else
+				push_a(num);
+		}
+	}
+
+	double findMedian()
+	{
+		if (a.size() > b.size())
+			return a[0];
+		else
+			return (double(a[0]) + double(b[0])) / 2;
 	}
 };
 
@@ -63,16 +129,15 @@ any_order_equal(const std::vector<T>& a, const std::vector<T>& b)
 	return true;
 }
 
+MedianFinder finder;
+
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(double expected)
 {
-	Solution sol;
-	auto got = sol.method(data);
-	if (got != expected) {
+	auto got = finder.findMedian();
+	if (fabs(got - expected) > 1e-5) {
 	//if (!any_order_equal(got, expected)) {
-		std::cout << data
-			  << " : "
-			  << "expected " << expected
+		std::cout << "expected " << expected
 			  << " got " << got << std::endl;
 		abort();
 	}
@@ -80,5 +145,9 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	finder.addNum(1);
+	finder.addNum(2);
+	check(1.5);
+	finder.addNum(3);
+	check(2);
 }
