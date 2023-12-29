@@ -6,6 +6,14 @@
 
 using namespace std;
 
+auto init = []()
+{
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+	std::cout.tie(nullptr);
+	return 0;
+}();
+
 class Solution {
 public:
 	std::vector<int> method(const std::vector<int>& data)
