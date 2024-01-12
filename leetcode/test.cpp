@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-using namespace std;
+//using namespace std;
 
 auto init = []()
 {
@@ -14,11 +14,98 @@ auto init = []()
 	return 0;
 }();
 
+struct LetterSum {
+	uint16_t count[26] = {};
+	int total = 0;
+	void clear()
+	{
+		*this = LetterSum{};
+	}
+	void add(char c)
+	{
+		if (count[c - 'a']++ == 0)
+			total++;
+	}
+	void del(char c)
+	{
+		if (--count[c - 'a'] == 0)
+			total--;
+	}
+};
+
+int buf[10001];
+
 class Solution {
 public:
-	std::vector<int> method(const std::vector<int>& data)
+	int more(const std::string& s, int k, int pos, LetterSum& prev)
 	{
-		return data;
+		int l = s.size(), b = pos, e = pos;
+		if (b == l)
+			return 0;
+		int can = 0;
+		for (size_t i = 0; i < 26; i++)
+			if (prev.count[i] == 0)
+				can |= 1 << i;
+		LetterSum sum;
+		int dontneed = 0;
+		while (true) {
+			dontneed |= 1 << (s[e] - 'a');
+			sum.add(s[e++]);
+			if (sum.total >= k) {
+				if (can &~ dontneed)
+					return 1 + buf[e - 1];
+				return 0;
+			}
+			if (e == l)
+				return 1;
+		}
+	}
+	int maxPartitionsAfterOperations(const std::string& s, int k)
+	{
+		if (k >= 26)
+			return 1;
+
+		LetterSum sum;
+		int l, b, e;
+		l = b = e = s.size();
+		buf[e] = 0;
+		while (b != 0) {
+			sum.add(s[--b]);
+			while (sum.total > k)
+				sum.del(s[--e]);
+			buf[b] = 1 + buf[e];
+		}
+
+		b = e = 0;
+		int m = buf[0];
+		int p = 0;
+		do {
+			sum.clear();
+			do {
+				sum.add(s[e++]);
+				if (sum.total > k) {
+					sum.del(s[--e]);
+					break;
+				}
+				if (sum.total >= k && e - b > k ) {
+					m = std::max(m, p + 1 + buf[e - 1]);
+					if (sum.count[s[e - 1] - 'a'] > 1)
+						m = std::max(m, p + 1 +
+								more(s, k, e,
+								     sum));
+				}
+			} while (e < l);
+			while (e < l) {
+				sum.add(s[e++]);
+				if (sum.total > k) {
+					sum.del(s[--e]);
+					break;
+				}
+			}
+			b = e;
+			p++;
+		} while (b != l);
+		return m;
 	}
 };
 
@@ -72,10 +159,10 @@ any_order_equal(const std::vector<T>& a, const std::vector<T>& b)
 }
 
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(const std::string& data, int k, int expected)
 {
 	Solution sol;
-	auto got = sol.method(data);
+	auto got = sol.maxPartitionsAfterOperations(data, k);
 	if (got != expected) {
 	//if (!any_order_equal(got, expected)) {
 		std::cout << data
@@ -88,5 +175,9 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	check("accca", 2, 3);
+	check("aabaab", 3, 1);
+	check("xxyz", 1, 4);
+	check("baacccb", 1, 6);
+	check("ccbaabbba", 2, 4);
 }
