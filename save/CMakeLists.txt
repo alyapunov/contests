@@ -27,3 +27,6 @@ ADD_TEST(NAME Galois.test COMMAND Galois.test)
 
 ADD_EXECUTABLE(BitSet.test BitSet.cpp)
 ADD_TEST(NAME BitSet.test COMMAND BitSet.test)
+
+ADD_EXECUTABLE(KMP.test KMP.cpp)
+ADD_TEST(NAME KMP.test COMMAND KMP.test)
