@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-using namespace std;
+//using namespace std;
 
 auto init = []()
 {
@@ -14,11 +14,93 @@ auto init = []()
 	return 0;
 }();
 
+template <size_t MAX_LENGTH, class OFF_T>
+struct KMP {
+	OFF_T prefix[MAX_LENGTH];
+	const char *str;
+	OFF_T size;
+	OFF_T pos;
+	void init(const char *str_, OFF_T size_)
+	{
+		str = str_;
+		size = size_;
+		prefix[0] = 0;
+		for (OFF_T i = 1, j = 0; i < size; i++) {
+			while (true) {
+				if (str[i] == str[j]) {
+					prefix[i] = ++j;
+					break;
+				} else if (j == 0) {
+					prefix[i] = 0;
+					break;
+				} else {
+					j = prefix[j - 1];
+				}
+			}
+		}
+		pos = 0;
+	}
+	bool next(char c)
+	{
+		while (true) {
+			if (c == str[pos]) {
+				pos++;
+				if (pos == size) {
+					pos = prefix[pos - 1];
+					return true;
+				} else {
+					return false;
+				}
+			} else if (pos == 0) {
+				return false;
+			} else {
+				pos = prefix[pos - 1];
+			}
+		}
+	}
+};
+
+KMP<500000, int> sa, sb;
+
 class Solution {
 public:
-	std::vector<int> method(const std::vector<int>& data)
+	std::vector<int>
+	beautifulIndices(const std::string& s, const std::string& a,
+			 const std::string& b, int k)
 	{
-		return data;
+		std::vector<int> res;
+		int sl = s.size(), al = a.size(), bl = b.size();
+		sa.init(a.data(), a.size());
+		sb.init(b.data(), b.size());
+		int j = 0;
+		while (!sb.next(s[j++])) {
+			if (j == sl)
+				return res;
+		}
+		int y = j - bl;
+		for (int i = 0; i < sl; ) {
+			if (!sa.next(s[i++]))
+				continue;
+			int x = i - al;
+			while (true) {
+				if (y <= x) {
+					if (x - y <= k) {
+						res.push_back(x);
+						break;
+					}
+					do {
+						if (j == sl)
+							return res;
+					} while (!sb.next(s[j++]));
+					y = j - bl;
+				} else {
+					if (y - x <= k)
+						res.push_back(x);
+					break;
+				}
+			}
+		}
+		return res;
 	}
 };
 
@@ -72,13 +154,14 @@ any_order_equal(const std::vector<T>& a, const std::vector<T>& b)
 }
 
 void
-check(const std::vector<int>& data, const std::vector<int>& expected)
+check(const std::string& s, const std::string& a, const std::string& b, int k,
+      const std::vector<int>& expected)
 {
 	Solution sol;
-	auto got = sol.method(data);
+	auto got = sol.beautifulIndices(s, a, b, k);
 	if (got != expected) {
 	//if (!any_order_equal(got, expected)) {
-		std::cout << data
+		std::cout << s << ", " << a << ", " << b << ", " << k
 			  << " : "
 			  << "expected " << expected
 			  << " got " << got << std::endl;
@@ -88,5 +171,6 @@ check(const std::vector<int>& data, const std::vector<int>& expected)
 
 int main()
 {
-	check({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5});
+	check("isawsquirrelnearmysquirrelhouseohmy", "my", "squirrel", 15, {16, 33});
+	check("abcd", "a", "a", 4, {0});
 }
